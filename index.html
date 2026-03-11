@@ -1,0 +1,59 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>전기기능사 문제풀이</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+        .quiz-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        .question-area { font-size: 1.1rem; min-height: 150px; margin-bottom: 20px; line-height: 1.7; }
+        .answer-area { display: none; background: #f8f9fa; border: 1px dashed #3498db; padding: 15px; border-radius: 8px; color: #2c3e50; margin-bottom: 20px; }
+        .buttons { display: flex; gap: 10px; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-show { background: #34495e; color: white; }
+        .btn-next { background: #3498db; color: white; }
+        button:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card">
+    <div id="quiz-count" style="font-size: 0.8rem; color: #888;"></div>
+    <div class="question-area" id="questionBox">문제를 불러오는 중입니다...</div>
+
+    <div class="answer-area" id="answerBox">
+        <strong>정답:</strong> <span id="answerText"></span>
+    </div>
+
+    <div class="buttons">
+        <button class="btn-show" onclick="showAnswer()">정답 확인</button>
+        <button class="btn-next" onclick="nextQuiz()">다음 문제</button>
+    </div>
+</div>
+
+<script src="questions.js"></script>
+
+<script>
+    function nextQuiz() {
+        if (typeof quizData === 'undefined') return;
+
+        const randomIndex = Math.floor(Math.random() * quizData.length);
+        const selected = quizData[randomIndex];
+
+        document.getElementById('questionBox').innerHTML = selected[0];
+        document.getElementById('answerText').innerHTML = selected[1];
+        document.getElementById('answerBox').style.display = 'none';
+        document.getElementById('quiz-count').innerText = "총 " + quizData.length + "문제 중 랜덤 출제";
+    }
+
+    function showAnswer() {
+        document.getElementById('answerBox').style.display = 'block';
+    }
+
+    // 시작하자마자 첫 문제 로드
+    window.onload = nextQuiz;
+</script>
+
+</body>
+</html>
