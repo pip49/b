@@ -16,8 +16,8 @@
     max-width: 500px; 
    }
         .question-area { font-size: 1.1rem; min-height: 150px; margin-bottom: 20px; line-height: 1.7; }
-	/* 이미지와 오디오가 카드 너비를 넘지 않게 조절 */
-.question-area img {
+/* 문제 및 정답 구역 내의 이미지/오디오 스타일 */
+.question-area img, .answer-area img {
     max-width: 100%;
     height: auto;
     display: block;
@@ -25,24 +25,23 @@
     border-radius: 5px;
 }
 
-.question-area audio {
+.question-area audio, .answer-area audio {
     width: 100%;
     margin: 10px 0;
 }
-        .answer-area { display: none; background: #f8f9fa; border: 1px dashed #3498db; padding: 15px; border-radius: 8px; color: #2c3e50; margin-bottom: 20px; }
- /* 정답 영역 내의 이미지와 오디오 스타일 */
-.answer-area img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin-top: 10px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
+
+/* 문제 및 정답 구역 내의 링크 스타일 */
+.question-area a, .answer-area a {
+    display: inline-block;
+    margin: 5px 0;
+    font-weight: bold;
+    cursor: pointer;
+    color: #3498db; /* 링크 색상 */
+    text-decoration: underline; /* 밑줄 */
 }
 
-.answer-area audio {
-    width: 100%;
-    margin-top: 10px;
+.question-area a:hover, .answer-area a:hover {
+    opacity: 0.7;
 }
 
         .buttons { display: flex; gap: 10px; }
@@ -50,6 +49,19 @@
         .btn-show { background: #34495e; color: white; }
         .btn-next { background: #3498db; color: white; }
         button:active { transform: scale(0.98); }
+
+	.answer-area {
+    display: none;
+    background: #f8f9fa;
+    border: 1px dashed #3498db;
+    padding: 15px;
+    border-radius: 8px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 1rem; /* 글자 크기 확보 */
+    line-height: 1.6; /* 줄 간격 확보 */
+    word-break: keep-all; /* 단어 단위로 줄바꿈 되어 가독성 향상 */
+}
     </style>
 </head>
 <body>
