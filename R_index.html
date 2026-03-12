@@ -1,0 +1,143 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전기기능사 문제풀이</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+   .quiz-card { 
+    background: white; 
+    padding: 20px; /* 패딩을 조금 줄임 */
+    border-radius: 15px; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+    width: 95%; /* 모바일에서 좌우 여백 확보 */
+    max-width: 500px; 
+   }
+        .question-area { font-size: 1.1rem; min-height: 150px; margin-bottom: 20px; line-height: 1.7; }
+/* 문제 및 정답 구역 내의 이미지/오디오 스타일 */
+.question-area img, .answer-area img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px 0;
+    border-radius: 5px;
+}
+
+.question-area audio, .answer-area audio {
+    width: 100%;
+    margin: 10px 0;
+}
+
+/* 문제 및 정답 구역 내의 링크 스타일 */
+.question-area a, .answer-area a {
+    display: inline-block;
+    margin: 5px 0;
+    font-weight: bold;
+    cursor: pointer;
+    color: #3498db; /* 링크 색상 */
+    text-decoration: underline; /* 밑줄 */
+}
+
+.question-area a:hover, .answer-area a:hover {
+    opacity: 0.7;
+}
+
+        .buttons { display: flex; gap: 10px; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-show { background: #34495e; color: white; }
+        .btn-next { background: #3498db; color: white; }
+	.btn-prev { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        button:active { transform: scale(0.98); }
+
+	.answer-area {
+    display: none;
+    background: #f8f9fa;
+    border: 1px dashed #3498db;
+    padding: 15px;
+    border-radius: 8px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 1rem; /* 글자 크기 확보 */
+    line-height: 1.6; /* 줄 간격 확보 */
+    word-break: keep-all; /* 단어 단위로 줄바꿈 되어 가독성 향상 */
+}
+    </style>
+</head>
+<body>
+
+<div class="quiz-card">
+    <div id="quiz-count" style="font-size: 0.8rem; color: #888;"></div>
+    <div class="question-area" id="questionBox">문제를 불러오는 중입니다...</div>
+
+    <div class="answer-area" id="answerBox">
+        <strong>정답:</strong> <span id="answerText"></span>
+    </div>
+
+    <div class="buttons">
+    <button class="btn-prev" onclick="prevQuiz()" id="prevBtn" style="background: #95a5a6; color: white; display: none;">이전 문제</button>
+    <button class="btn-show" onclick="showAnswer()">정답 확인</button>
+    <button class="btn-next" onclick="nextQuiz()">다음 문제</button>
+</div>
+</div>
+
+<script src="data.js"></script>
+
+<script>
+    let history = []; // 지나온 문제 번호들을 저장하는 배열
+    let currentHistoryIndex = -1; // 현재 히스토리 내 위치
+
+    function nextQuiz() {
+        if (typeof quizData === 'undefined') return;
+
+        // 만약 '이전 문제'를 보다가 다시 '다음 문제'를 누른 것이 아니라면 새로운 랜덤 문제 추출
+        if (currentHistoryIndex >= history.length - 1) {
+            const randomIndex = Math.floor(Math.random() * quizData.length);
+            history.push(randomIndex);
+            currentHistoryIndex++;
+        } else {
+            // 히스토리 역주행 중이었다면 다음 히스토리로 이동
+            currentHistoryIndex++;
+        }
+
+        displayQuiz(history[currentHistoryIndex]);
+        updatePrevButton();
+    }
+
+    function prevQuiz() {
+        if (currentHistoryIndex > 0) {
+            currentHistoryIndex--;
+            displayQuiz(history[currentHistoryIndex]);
+            updatePrevButton();
+        }
+    }
+
+    function displayQuiz(index) {
+        const selected = quizData[index];
+        document.getElementById('questionBox').innerHTML = selected[0];
+        document.getElementById('answerText').innerHTML = selected[1];
+        document.getElementById('answerBox').style.display = 'none';
+        document.getElementById('quiz-count').innerText = "총 " + quizData.length + "문제 중 랜덤 출제";
+        window.scrollTo(0, 0);
+    }
+
+    function updatePrevButton() {
+        // 첫 번째 문제일 때는 '이전 문제' 버튼을 숨김
+        const prevBtn = document.getElementById('prevBtn');
+        if (currentHistoryIndex > 0) {
+            prevBtn.style.display = 'block';
+        } else {
+            prevBtn.style.display = 'none';
+        }
+    }
+
+    function showAnswer() {
+        document.getElementById('answerBox').style.display = 'block';
+    }
+
+    window.onload = nextQuiz;
+</script>
+
+</body>
+</html>

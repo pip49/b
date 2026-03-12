@@ -6,69 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>전기기능사 문제풀이</title>
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
-   .quiz-card { 
-    background: white; 
-    padding: 20px; /* 패딩을 조금 줄임 */
-    border-radius: 15px; 
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
-    width: 95%; /* 모바일에서 좌우 여백 확보 */
-    max-width: 500px; 
-   }
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .quiz-card {
+            background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%; max-width: 500px; box-sizing: border-box; margin-top: 20px;
+        }
+        /* 모드 전환 스위치 스타일 */
+        .mode-switch { display: flex; justify-content: flex-end; margin-bottom: 10px; gap: 5px; align-items: center; }
+        .mode-label { font-size: 0.85rem; font-weight: bold; color: #555; }
+
         .question-area { font-size: 1.1rem; min-height: 150px; margin-bottom: 20px; line-height: 1.7; }
-/* 문제 및 정답 구역 내의 이미지/오디오 스타일 */
-.question-area img, .answer-area img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 10px 0;
-    border-radius: 5px;
-}
-
-.question-area audio, .answer-area audio {
-    width: 100%;
-    margin: 10px 0;
-}
-
-/* 문제 및 정답 구역 내의 링크 스타일 */
-.question-area a, .answer-area a {
-    display: inline-block;
-    margin: 5px 0;
-    font-weight: bold;
-    cursor: pointer;
-    color: #3498db; /* 링크 색상 */
-    text-decoration: underline; /* 밑줄 */
-}
-
-.question-area a:hover, .answer-area a:hover {
-    opacity: 0.7;
-}
-
+        .question-area img, .answer-area img { max-width: 100%; height: auto; display: block; margin: 10px 0; border-radius: 5px; }
+        .question-area audio, .answer-area audio { width: 100%; margin: 10px 0; }
+        .answer-area {
+            display: none; background: #f8f9fa; border: 1px dashed #3498db; padding: 15px;
+            border-radius: 8px; color: #2c3e50; margin-bottom: 20px; font-size: 1rem; line-height: 1.6; word-break: keep-all;
+        }
         .buttons { display: flex; gap: 10px; }
-        button { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        .btn-prev { background: #95a5a6; color: white; }
         .btn-show { background: #34495e; color: white; }
         .btn-next { background: #3498db; color: white; }
-	.btn-prev { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        .btn-mode { flex: none; padding: 5px 10px; font-size: 0.75rem; background: #ecf0f1; color: #7f8c8d; border: 1px solid #bdc3c7; }
+        .btn-mode.active { background: #2ecc71; color: white; border-color: #27ae60; }
         button:active { transform: scale(0.98); }
-
-	.answer-area {
-    display: none;
-    background: #f8f9fa;
-    border: 1px dashed #3498db;
-    padding: 15px;
-    border-radius: 8px;
-    color: #2c3e50;
-    margin-bottom: 20px;
-    font-size: 1rem; /* 글자 크기 확보 */
-    line-height: 1.6; /* 줄 간격 확보 */
-    word-break: keep-all; /* 단어 단위로 줄바꿈 되어 가독성 향상 */
-}
+        .question-area a, .answer-area a { color: #3498db; text-decoration: underline; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="quiz-card">
-    <div id="quiz-count" style="font-size: 0.8rem; color: #888;"></div>
+    <div class="mode-switch">
+        <span class="mode-label">모드:</span>
+        <button id="modeBtn" class="btn-mode" onclick="toggleMode()">랜덤 모드</button>
+    </div>
+    <div id="quiz-count" style="font-size: 0.8rem; color: #888; margin-bottom: 5px;"></div>
     <div class="question-area" id="questionBox">문제를 불러오는 중입니다...</div>
 
     <div class="answer-area" id="answerBox">
@@ -76,41 +48,79 @@
     </div>
 
     <div class="buttons">
-    <button class="btn-prev" onclick="prevQuiz()" id="prevBtn" style="background: #95a5a6; color: white; display: none;">이전 문제</button>
-    <button class="btn-show" onclick="showAnswer()">정답 확인</button>
-    <button class="btn-next" onclick="nextQuiz()">다음 문제</button>
-</div>
+        <button class="btn-prev" onclick="prevQuiz()" id="prevBtn" style="background: #95a5a6; color: white; display: none;">이전</button>
+        <button class="btn-show" onclick="showAnswer()">정답 확인</button>
+        <button class="btn-next" onclick="nextQuiz()">다음 문제</button>
+    </div>
 </div>
 
 <script src="data.js"></script>
 
 <script>
-    let history = []; // 지나온 문제 번호들을 저장하는 배열
-    let currentHistoryIndex = -1; // 현재 히스토리 내 위치
+    let history = [];
+    let currentHistoryIndex = -1;
+    let isRandomMode = true; // 기본값 랜덤 모드
+    let sequentialIndex = 0; // 순차 모드용 인덱스
+
+    function toggleMode() {
+        isRandomMode = !isRandomMode;
+        const modeBtn = document.getElementById('modeBtn');
+
+        // 상태 초기화 및 버튼 텍스트 변경
+        if (isRandomMode) {
+            modeBtn.innerText = "랜덤 모드";
+            modeBtn.classList.remove('active');
+            history = []; // 랜덤 기록 초기화
+            currentHistoryIndex = -1;
+        } else {
+            modeBtn.innerText = "순차 모드";
+            modeBtn.classList.add('active');
+            sequentialIndex = 0; // 1번 문제부터 시작
+        }
+        nextQuiz(); // 모드 변경 즉시 다음 문제(첫 문제) 호출
+    }
 
     function nextQuiz() {
         if (typeof quizData === 'undefined') return;
 
-        // 만약 '이전 문제'를 보다가 다시 '다음 문제'를 누른 것이 아니라면 새로운 랜덤 문제 추출
-        if (currentHistoryIndex >= history.length - 1) {
-            const randomIndex = Math.floor(Math.random() * quizData.length);
-            history.push(randomIndex);
-            currentHistoryIndex++;
+        if (isRandomMode) {
+            // 랜덤 모드 로직
+            if (currentHistoryIndex >= history.length - 1) {
+                const randomIndex = Math.floor(Math.random() * quizData.length);
+                history.push(randomIndex);
+                currentHistoryIndex++;
+            } else {
+                currentHistoryIndex++;
+            }
+            displayQuiz(history[currentHistoryIndex]);
         } else {
-            // 히스토리 역주행 중이었다면 다음 히스토리로 이동
-            currentHistoryIndex++;
+            // 순차 모드 로직
+            if (sequentialIndex < quizData.length) {
+                displayQuiz(sequentialIndex);
+                sequentialIndex++;
+            } else {
+                alert("마지막 문제 부근입니다. 처음부터 다시 시작합니다.");
+                sequentialIndex = 0;
+                displayQuiz(sequentialIndex);
+            }
         }
-
-        displayQuiz(history[currentHistoryIndex]);
         updatePrevButton();
     }
 
     function prevQuiz() {
-        if (currentHistoryIndex > 0) {
-            currentHistoryIndex--;
-            displayQuiz(history[currentHistoryIndex]);
-            updatePrevButton();
+        if (isRandomMode) {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                displayQuiz(history[currentHistoryIndex]);
+            }
+        } else {
+            if (sequentialIndex > 1) {
+                sequentialIndex -= 2; // 다음 문제 버튼에서 이미 index가 증가했으므로 2를 뺌
+                if (sequentialIndex < 0) sequentialIndex = 0;
+                nextQuiz();
+            }
         }
+        updatePrevButton();
     }
 
     function displayQuiz(index) {
@@ -118,18 +128,16 @@
         document.getElementById('questionBox').innerHTML = selected[0];
         document.getElementById('answerText').innerHTML = selected[1];
         document.getElementById('answerBox').style.display = 'none';
-        document.getElementById('quiz-count').innerText = "총 " + quizData.length + "문제 중 랜덤 출제";
+
+        const modeText = isRandomMode ? "랜덤" : "순차";
+        document.getElementById('quiz-count').innerText = `[${modeText}] 전체 ${quizData.length}문항 중 ${index + 1}번 확인 중`;
         window.scrollTo(0, 0);
     }
 
     function updatePrevButton() {
-        // 첫 번째 문제일 때는 '이전 문제' 버튼을 숨김
         const prevBtn = document.getElementById('prevBtn');
-        if (currentHistoryIndex > 0) {
-            prevBtn.style.display = 'block';
-        } else {
-            prevBtn.style.display = 'none';
-        }
+        const canGoBack = isRandomMode ? (currentHistoryIndex > 0) : (sequentialIndex > 1);
+        prevBtn.style.display = canGoBack ? 'block' : 'none';
     }
 
     function showAnswer() {
