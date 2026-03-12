@@ -48,6 +48,7 @@
         button { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-show { background: #34495e; color: white; }
         .btn-next { background: #3498db; color: white; }
+	.btn-prev { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 1rem; }
         button:active { transform: scale(0.98); }
 
 	.answer-area {
@@ -75,31 +76,66 @@
     </div>
 
     <div class="buttons">
-        <button class="btn-show" onclick="showAnswer()">정답 확인</button>
-        <button class="btn-next" onclick="nextQuiz()">다음 문제</button>
-    </div>
+    <button class="btn-prev" onclick="prevQuiz()" id="prevBtn" style="background: #95a5a6; color: white; display: none;">이전 문제</button>
+    <button class="btn-show" onclick="showAnswer()">정답 확인</button>
+    <button class="btn-next" onclick="nextQuiz()">다음 문제</button>
+</div>
 </div>
 
 <script src="data.js"></script>
 
 <script>
+    let history = []; // 지나온 문제 번호들을 저장하는 배열
+    let currentHistoryIndex = -1; // 현재 히스토리 내 위치
+
     function nextQuiz() {
         if (typeof quizData === 'undefined') return;
 
-        const randomIndex = Math.floor(Math.random() * quizData.length);
-        const selected = quizData[randomIndex];
+        // 만약 '이전 문제'를 보다가 다시 '다음 문제'를 누른 것이 아니라면 새로운 랜덤 문제 추출
+        if (currentHistoryIndex >= history.length - 1) {
+            const randomIndex = Math.floor(Math.random() * quizData.length);
+            history.push(randomIndex);
+            currentHistoryIndex++;
+        } else {
+            // 히스토리 역주행 중이었다면 다음 히스토리로 이동
+            currentHistoryIndex++;
+        }
 
+        displayQuiz(history[currentHistoryIndex]);
+        updatePrevButton();
+    }
+
+    function prevQuiz() {
+        if (currentHistoryIndex > 0) {
+            currentHistoryIndex--;
+            displayQuiz(history[currentHistoryIndex]);
+            updatePrevButton();
+        }
+    }
+
+    function displayQuiz(index) {
+        const selected = quizData[index];
         document.getElementById('questionBox').innerHTML = selected[0];
         document.getElementById('answerText').innerHTML = selected[1];
         document.getElementById('answerBox').style.display = 'none';
         document.getElementById('quiz-count').innerText = "총 " + quizData.length + "문제 중 랜덤 출제";
+        window.scrollTo(0, 0);
+    }
+
+    function updatePrevButton() {
+        // 첫 번째 문제일 때는 '이전 문제' 버튼을 숨김
+        const prevBtn = document.getElementById('prevBtn');
+        if (currentHistoryIndex > 0) {
+            prevBtn.style.display = 'block';
+        } else {
+            prevBtn.style.display = 'none';
+        }
     }
 
     function showAnswer() {
         document.getElementById('answerBox').style.display = 'block';
     }
 
-    // 시작하자마자 첫 문제 로드
     window.onload = nextQuiz;
 </script>
 
