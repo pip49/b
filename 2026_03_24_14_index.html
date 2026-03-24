@@ -11,45 +11,56 @@
             background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             width: 100%; max-width: 500px; box-sizing: border-box; margin-top: 20px;
         }
-        /* 검색창 스타일 추가 */
-        .search-box { display: flex; gap: 5px; margin-bottom: 15px; }
-        .search-box input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
-        .search-box button { flex: none; width: 60px; padding: 10px; background: #27ae60; color: white; font-size: 0.9rem; }
+        /* 상단 컨트롤 영역 레이아웃 */
+        .control-panel { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .search-box, .go-to-box { display: flex; gap: 5px; }
 
-        /* 모드 전환 스위치 스타일 */
+        input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 0.9rem; }
+        .search-box input { flex: 1; }
+        .go-to-box input { width: 80px; text-align: center; }
+
+        button { cursor: pointer; transition: 0.2s; border: none; border-radius: 8px; font-weight: bold; }
+        .btn-action { padding: 10px; background: #27ae60; color: white; font-size: 0.9rem; min-width: 60px; }
+        .btn-go { background: #8e44ad; color: white; }
+
         .mode-switch { display: flex; justify-content: flex-end; margin-bottom: 10px; gap: 5px; align-items: center; }
         .mode-label { font-size: 0.85rem; font-weight: bold; color: #555; }
 
         .question-area { font-size: 1.1rem; min-height: 150px; margin-bottom: 20px; line-height: 1.7; }
-        .question-area img, .answer-area img { max-width: 100%; height: auto; display: block; margin: 10px 0; border-radius: 5px; }
-        .question-area audio, .answer-area audio { width: 100%; margin: 10px 0; }
         .answer-area {
             display: none; background: #f8f9fa; border: 1px dashed #3498db; padding: 15px;
             border-radius: 8px; color: #2c3e50; margin-bottom: 20px; font-size: 1rem; line-height: 1.6; word-break: keep-all;
         }
         .buttons { display: flex; gap: 10px; }
-        button { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        .btn-main { flex: 1; padding: 15px; font-size: 1rem; }
         .btn-prev { background: #95a5a6; color: white; }
         .btn-show { background: #34495e; color: white; }
         .btn-next { background: #3498db; color: white; }
         .btn-mode { flex: none; padding: 5px 10px; font-size: 0.75rem; background: #ecf0f1; color: #7f8c8d; border: 1px solid #bdc3c7; }
         .btn-mode.active { background: #2ecc71; color: white; border-color: #27ae60; }
         button:active { transform: scale(0.98); }
-        .question-area a, .answer-area a { color: #3498db; text-decoration: underline; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="quiz-card">
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="문제 내용 검색..." onkeyup="if(window.event.keyCode==13){searchQuiz()}">
-        <button onclick="searchQuiz()">검색</button>
+    <div class="control-panel">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="내용 검색..." onkeyup="if(window.event.keyCode==13){searchQuiz()}">
+            <button class="btn-action" onclick="searchQuiz()">검색</button>
+        </div>
+        <div class="go-to-box">
+            <input type="number" id="pageInput" placeholder="번호" onkeyup="if(window.event.keyCode==13){goToQuiz()}">
+            <button class="btn-action btn-go" onclick="goToQuiz()">이동</button>
+            <span style="font-size: 0.8rem; color: #888; align-self: center;">번 문제로 이동</span>
+        </div>
     </div>
 
     <div class="mode-switch">
         <span class="mode-label">모드:</span>
         <button id="modeBtn" class="btn-mode" onclick="toggleMode()">랜덤 모드</button>
     </div>
+
     <div id="quiz-count" style="font-size: 0.8rem; color: #888; margin-bottom: 5px;"></div>
     <div class="question-area" id="questionBox">문제를 불러오는 중입니다...</div>
 
@@ -58,9 +69,9 @@
     </div>
 
     <div class="buttons">
-        <button class="btn-prev" onclick="prevQuiz()" id="prevBtn" style="background: #95a5a6; color: white; display: none;">이전</button>
-        <button class="btn-show" onclick="showAnswer()">정답 확인</button>
-        <button class="btn-next" onclick="nextQuiz()">다음 문제</button>
+        <button class="btn-main btn-prev" onclick="prevQuiz()" id="prevBtn" style="display: none;">이전</button>
+        <button class="btn-main btn-show" onclick="showAnswer()">정답 확인</button>
+        <button class="btn-main btn-next" onclick="nextQuiz()">다음 문제</button>
     </div>
 </div>
 
@@ -72,7 +83,30 @@
     let isRandomMode = true;
     let sequentialIndex = 0;
 
-    // 검색 기능 함수
+    // 원하는 번호로 이동하는 함수
+    function goToQuiz() {
+        const input = document.getElementById('pageInput');
+        const num = parseInt(input.value);
+
+        if (isNaN(num) || num < 1 || num > quizData.length) {
+            alert(`1부터 ${quizData.length} 사이의 숫자를 입력해주세요.`);
+            return;
+        }
+
+        const targetIndex = num - 1; // 배열은 0부터 시작하므로
+
+        if (isRandomMode) {
+            history.push(targetIndex);
+            currentHistoryIndex = history.length - 1;
+        } else {
+            sequentialIndex = targetIndex + 1;
+        }
+
+        displayQuiz(targetIndex);
+        updatePrevButton();
+        input.value = ''; // 입력창 비우기
+    }
+
     function searchQuiz() {
         const keyword = document.getElementById('searchInput').value.trim();
         if (!keyword) {
@@ -80,13 +114,11 @@
             return;
         }
 
-        // data.js의 quizData에서 키워드 검색
         const foundIndex = quizData.findIndex(item =>
             item[0].includes(keyword) || item[1].includes(keyword)
         );
 
         if (foundIndex !== -1) {
-            // 검색된 문항이 있으면 해당 문항 표시
             if (isRandomMode) {
                 history.push(foundIndex);
                 currentHistoryIndex = history.length - 1;
@@ -95,7 +127,7 @@
             }
             displayQuiz(foundIndex);
             updatePrevButton();
-            showAnswer(); // 검색 결과는 내용을 바로 보여줌
+            document.getElementById('answerBox').style.display = 'block';
         } else {
             alert("해당 키워드가 포함된 문제를 찾을 수 없습니다.");
         }
@@ -135,7 +167,7 @@
                 displayQuiz(sequentialIndex);
                 sequentialIndex++;
             } else {
-                alert("마지막 문제 부근입니다. 처음부터 다시 시작합니다.");
+                alert("마지막 문제입니다. 처음부터 다시 시작합니다.");
                 sequentialIndex = 0;
                 displayQuiz(sequentialIndex);
                 sequentialIndex++;
@@ -177,17 +209,10 @@
         prevBtn.style.display = canGoBack ? 'block' : 'none';
     }
 
-
-
     function showAnswer() {
-    const answerBox = document.getElementById('answerBox');
-    // 현재 보이고 있다면 숨기고, 숨겨져 있다면 보여줍니다.
-    if (answerBox.style.display === 'block') {
-        answerBox.style.display = 'none';
-    } else {
-        answerBox.style.display = 'block';
+        const answerBox = document.getElementById('answerBox');
+        answerBox.style.display = (answerBox.style.display === 'block') ? 'none' : 'block';
     }
-}
 
     window.onload = nextQuiz;
 </script>

@@ -27,6 +27,8 @@
         .mode-label { font-size: 0.85rem; font-weight: bold; color: #555; }
 
         .question-area { font-size: 1.1rem; min-height: 150px; margin-bottom: 20px; line-height: 1.7; }
+        /* 외부에서 불러온 이미지 크기를 자동으로 조절하는 스타일 추가 */
+        .answer-area img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; }
         .answer-area {
             display: none; background: #f8f9fa; border: 1px dashed #3498db; padding: 15px;
             border-radius: 8px; color: #2c3e50; margin-bottom: 20px; font-size: 1rem; line-height: 1.6; word-break: keep-all;
@@ -83,7 +85,6 @@
     let isRandomMode = true;
     let sequentialIndex = 0;
 
-    // 원하는 번호로 이동하는 함수
     function goToQuiz() {
         const input = document.getElementById('pageInput');
         const num = parseInt(input.value);
@@ -93,7 +94,7 @@
             return;
         }
 
-        const targetIndex = num - 1; // 배열은 0부터 시작하므로
+        const targetIndex = num - 1;
 
         if (isRandomMode) {
             history.push(targetIndex);
@@ -104,7 +105,7 @@
 
         displayQuiz(targetIndex);
         updatePrevButton();
-        input.value = ''; // 입력창 비우기
+        input.value = '';
     }
 
     function searchQuiz() {
@@ -127,7 +128,8 @@
             }
             displayQuiz(foundIndex);
             updatePrevButton();
-            document.getElementById('answerBox').style.display = 'block';
+            // 검색 후 해설을 바로 보여주고 싶을 경우 아래 주석 해제
+            // document.getElementById('answerBox').style.display = 'block';
         } else {
             alert("해당 키워드가 포함된 문제를 찾을 수 없습니다.");
         }
@@ -192,10 +194,27 @@
         updatePrevButton();
     }
 
-    function displayQuiz(index) {
+    // fetch를 사용하기 위해 async 함수로 변경
+    async function displayQuiz(index) {
         const selected = quizData[index];
-        document.getElementById('questionBox').innerHTML = selected[0];
-        document.getElementById('answerText').innerHTML = selected[1];
+        const question = selected[0];
+        const answer = selected[1] || "";
+
+        document.getElementById('questionBox').innerHTML = question;
+
+        // 외부 HTML 파일을 읽어오는 로직 추가
+        if (answer.endsWith(".html")) {
+            try {
+                const response = await fetch(answer);
+                const text = await response.text();
+                document.getElementById('answerText').innerHTML = text;
+            } catch (e) {
+                document.getElementById('answerText').innerHTML = "해당 해설 파일을 불러오지 못했습니다.";
+            }
+        } else {
+            document.getElementById('answerText').innerHTML = answer;
+        }
+
         document.getElementById('answerBox').style.display = 'none';
 
         const modeText = isRandomMode ? "랜덤" : "순차";
