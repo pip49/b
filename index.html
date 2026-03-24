@@ -177,9 +177,17 @@
         prevBtn.style.display = canGoBack ? 'block' : 'none';
     }
 
+
+
     function showAnswer() {
-        document.getElementById('answerBox').style.display = 'block';
+    const answerBox = document.getElementById('answerBox');
+    // 현재 보이고 있다면 숨기고, 숨겨져 있다면 보여줍니다.
+    if (answerBox.style.display === 'block') {
+        answerBox.style.display = 'none';
+    } else {
+        answerBox.style.display = 'block';
     }
+}
 
     window.onload = nextQuiz;
 </script>
