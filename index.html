@@ -11,7 +11,6 @@
             background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             width: 100%; max-width: 500px; box-sizing: border-box; margin-top: 20px;
         }
-        /* 상단 컨트롤 영역 레이아웃 */
         .control-panel { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
         .search-box, .go-to-box { display: flex; gap: 5px; }
 
@@ -27,8 +26,6 @@
         .mode-label { font-size: 0.85rem; font-weight: bold; color: #555; }
 
         .question-area { font-size: 1.1rem; min-height: 150px; margin-bottom: 20px; line-height: 1.7; }
-        /* 외부에서 불러온 이미지 크기를 자동으로 조절하는 스타일 추가 */
-        .answer-area img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; }
         .answer-area {
             display: none; background: #f8f9fa; border: 1px dashed #3498db; padding: 15px;
             border-radius: 8px; color: #2c3e50; margin-bottom: 20px; font-size: 1rem; line-height: 1.6; word-break: keep-all;
@@ -84,25 +81,22 @@
     let currentHistoryIndex = -1;
     let isRandomMode = true;
     let sequentialIndex = 0;
+    let currentAnswer = ""; // 현재 문제의 정답 데이터를 보관할 변수
 
     function goToQuiz() {
         const input = document.getElementById('pageInput');
         const num = parseInt(input.value);
-
         if (isNaN(num) || num < 1 || num > quizData.length) {
             alert(`1부터 ${quizData.length} 사이의 숫자를 입력해주세요.`);
             return;
         }
-
         const targetIndex = num - 1;
-
         if (isRandomMode) {
             history.push(targetIndex);
             currentHistoryIndex = history.length - 1;
         } else {
             sequentialIndex = targetIndex + 1;
         }
-
         displayQuiz(targetIndex);
         updatePrevButton();
         input.value = '';
@@ -114,11 +108,9 @@
             alert("검색어를 입력하세요.");
             return;
         }
-
         const foundIndex = quizData.findIndex(item =>
-            item[0].includes(keyword) || item[1].includes(keyword)
+            item[0].includes(keyword) || (item[1] && item[1].includes(keyword))
         );
-
         if (foundIndex !== -1) {
             if (isRandomMode) {
                 history.push(foundIndex);
@@ -128,8 +120,6 @@
             }
             displayQuiz(foundIndex);
             updatePrevButton();
-            // 검색 후 해설을 바로 보여주고 싶을 경우 아래 주석 해제
-            // document.getElementById('answerBox').style.display = 'block';
         } else {
             alert("해당 키워드가 포함된 문제를 찾을 수 없습니다.");
         }
@@ -138,7 +128,6 @@
     function toggleMode() {
         isRandomMode = !isRandomMode;
         const modeBtn = document.getElementById('modeBtn');
-
         if (isRandomMode) {
             modeBtn.innerText = "랜덤 모드";
             modeBtn.classList.remove('active');
@@ -154,7 +143,6 @@
 
     function nextQuiz() {
         if (typeof quizData === 'undefined') return;
-
         if (isRandomMode) {
             if (currentHistoryIndex >= history.length - 1) {
                 const randomIndex = Math.floor(Math.random() * quizData.length);
@@ -194,28 +182,13 @@
         updatePrevButton();
     }
 
-    // fetch를 사용하기 위해 async 함수로 변경
-    async function displayQuiz(index) {
+    function displayQuiz(index) {
         const selected = quizData[index];
         const question = selected[0];
-        const answer = selected[1] || "";
+        currentAnswer = selected[1] || ""; // 정답 데이터를 변수에 저장
 
         document.getElementById('questionBox').innerHTML = question;
-
-        // 외부 HTML 파일을 읽어오는 로직 추가
-        if (answer.endsWith(".html")) {
-            try {
-                const response = await fetch(answer);
-                const text = await response.text();
-                document.getElementById('answerText').innerHTML = text;
-            } catch (e) {
-                document.getElementById('answerText').innerHTML = "해당 해설 파일을 불러오지 못했습니다.";
-            }
-        } else {
-            document.getElementById('answerText').innerHTML = answer;
-        }
-
-        document.getElementById('answerBox').style.display = 'none';
+        document.getElementById('answerBox').style.display = 'none'; // 새 문제 시 정답창 숨김
 
         const modeText = isRandomMode ? "랜덤" : "순차";
         document.getElementById('quiz-count').innerText = `[${modeText}] 전체 ${quizData.length}문항 중 ${index + 1}번 확인 중`;
@@ -228,9 +201,18 @@
         prevBtn.style.display = canGoBack ? 'block' : 'none';
     }
 
+    // 정답 확인 버튼 로직 수정
     function showAnswer() {
-        const answerBox = document.getElementById('answerBox');
-        answerBox.style.display = (answerBox.style.display === 'block') ? 'none' : 'block';
+        if (currentAnswer.endsWith(".html")) {
+            // 파일 경로인 경우 새 창(탭)으로 열기
+            window.open(currentAnswer, '_blank');
+        } else {
+            // 일반 텍스트인 경우 카드 내에서 토글
+            const answerBox = document.getElementById('answerBox');
+            const answerText = document.getElementById('answerText');
+            answerText.innerHTML = currentAnswer;
+            answerBox.style.display = (answerBox.style.display === 'block') ? 'none' : 'block';
+        }
     }
 
     window.onload = nextQuiz;
