@@ -11,11 +11,6 @@
             background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             width: 100%; max-width: 500px; box-sizing: border-box; margin-top: 20px;
         }
-        /* 검색창 스타일 추가 */
-        .search-box { display: flex; gap: 5px; margin-bottom: 15px; }
-        .search-box input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
-        .search-box button { flex: none; width: 60px; padding: 10px; background: #27ae60; color: white; font-size: 0.9rem; }
-
         /* 모드 전환 스위치 스타일 */
         .mode-switch { display: flex; justify-content: flex-end; margin-bottom: 10px; gap: 5px; align-items: center; }
         .mode-label { font-size: 0.85rem; font-weight: bold; color: #555; }
@@ -41,11 +36,6 @@
 <body>
 
 <div class="quiz-card">
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="문제 내용 검색..." onkeyup="if(window.event.keyCode==13){searchQuiz()}">
-        <button onclick="searchQuiz()">검색</button>
-    </div>
-
     <div class="mode-switch">
         <span class="mode-label">모드:</span>
         <button id="modeBtn" class="btn-mode" onclick="toggleMode()">랜덤 모드</button>
@@ -69,59 +59,32 @@
 <script>
     let history = [];
     let currentHistoryIndex = -1;
-    let isRandomMode = true;
-    let sequentialIndex = 0;
-
-    // 검색 기능 함수
-    function searchQuiz() {
-        const keyword = document.getElementById('searchInput').value.trim();
-        if (!keyword) {
-            alert("검색어를 입력하세요.");
-            return;
-        }
-
-        // data.js의 quizData에서 키워드 검색
-        const foundIndex = quizData.findIndex(item =>
-            item[0].includes(keyword) || item[1].includes(keyword)
-        );
-
-        if (foundIndex !== -1) {
-            // 검색된 문항이 있으면 해당 문항 표시
-            if (isRandomMode) {
-                history.push(foundIndex);
-                currentHistoryIndex = history.length - 1;
-            } else {
-                sequentialIndex = foundIndex + 1;
-            }
-            displayQuiz(foundIndex);
-            updatePrevButton();
-            showAnswer(); // 검색 결과는 내용을 바로 보여줌
-        } else {
-            alert("해당 키워드가 포함된 문제를 찾을 수 없습니다.");
-        }
-    }
+    let isRandomMode = true; // 기본값 랜덤 모드
+    let sequentialIndex = 0; // 순차 모드용 인덱스
 
     function toggleMode() {
         isRandomMode = !isRandomMode;
         const modeBtn = document.getElementById('modeBtn');
 
+        // 상태 초기화 및 버튼 텍스트 변경
         if (isRandomMode) {
             modeBtn.innerText = "랜덤 모드";
             modeBtn.classList.remove('active');
-            history = [];
+            history = []; // 랜덤 기록 초기화
             currentHistoryIndex = -1;
         } else {
             modeBtn.innerText = "순차 모드";
             modeBtn.classList.add('active');
-            sequentialIndex = 0;
+            sequentialIndex = 0; // 1번 문제부터 시작
         }
-        nextQuiz();
+        nextQuiz(); // 모드 변경 즉시 다음 문제(첫 문제) 호출
     }
 
     function nextQuiz() {
         if (typeof quizData === 'undefined') return;
 
         if (isRandomMode) {
+            // 랜덤 모드 로직
             if (currentHistoryIndex >= history.length - 1) {
                 const randomIndex = Math.floor(Math.random() * quizData.length);
                 history.push(randomIndex);
@@ -131,6 +94,7 @@
             }
             displayQuiz(history[currentHistoryIndex]);
         } else {
+            // 순차 모드 로직
             if (sequentialIndex < quizData.length) {
                 displayQuiz(sequentialIndex);
                 sequentialIndex++;
@@ -138,7 +102,6 @@
                 alert("마지막 문제 부근입니다. 처음부터 다시 시작합니다.");
                 sequentialIndex = 0;
                 displayQuiz(sequentialIndex);
-                sequentialIndex++;
             }
         }
         updatePrevButton();
@@ -152,7 +115,7 @@
             }
         } else {
             if (sequentialIndex > 1) {
-                sequentialIndex -= 2;
+                sequentialIndex -= 2; // 다음 문제 버튼에서 이미 index가 증가했으므로 2를 뺌
                 if (sequentialIndex < 0) sequentialIndex = 0;
                 nextQuiz();
             }
