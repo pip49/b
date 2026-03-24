@@ -4,173 +4,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>전기기능사 스마트 마스터</title>
+    <title>별도 js 전기기능사 문제풀이</title>
     <style>
-        /* 기본 레이아웃 설정 */
-        :root {
-            --primary-color: #4a90e2;
-            --secondary-color: #67b26f;
-            --accent-color: #8e44ad;
-            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            --card-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        }
-
-        body {
-            font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
-            background: var(--bg-gradient);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-
-        /* 퀴즈 카드 디자인 */
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; margin: 0; }
         .quiz-card {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: var(--card-shadow);
-            width: 100%;
-            max-width: 550px;
-            box-sizing: border-box;
-            backdrop-filter: blur(10px);
+            background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%; max-width: 500px; box-sizing: border-box; margin-top: 20px;
         }
+        .control-panel { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .search-box, .go-to-box { display: flex; gap: 5px; }
 
-        /* 상단 컨트롤 패널 */
-        .control-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-
-        .input-group { display: flex; gap: 8px; }
-
-        input {
-            padding: 12px 15px;
-            border: 2px solid #edf2f7;
-            border-radius: 12px;
-            outline: none;
-            font-size: 0.95rem;
-            transition: border-color 0.3s;
-            background: #fff;
-        }
-        input:focus { border-color: var(--primary-color); }
+        input { padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 0.9rem; }
         .search-box input { flex: 1; }
-        .go-to-box input { width: 90px; text-align: center; }
+        .go-to-box input { width: 80px; text-align: center; }
 
-        /* 버튼 공통 스타일 */
-        button {
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-            border-radius: 12px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        button:active { transform: translateY(2px); }
+        button { cursor: pointer; transition: 0.2s; border: none; border-radius: 8px; font-weight: bold; }
+        .btn-action { padding: 10px; background: #27ae60; color: white; font-size: 0.9rem; min-width: 60px; }
+        .btn-go { background: #8e44ad; color: white; }
 
-        .btn-action {
-            padding: 12px 20px;
-            background: var(--secondary-color);
-            color: white;
-            font-size: 0.9rem;
-        }
-        .btn-go { background: var(--accent-color); }
+        .mode-switch { display: flex; justify-content: flex-end; margin-bottom: 10px; gap: 5px; align-items: center; }
+        .mode-label { font-size: 0.85rem; font-weight: bold; color: #555; }
 
-        /* 모드 전환 토글 */
-        .mode-switch {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 10px 15px;
-            background: #f8fafc;
-            border-radius: 12px;
-        }
-        .mode-label { font-size: 0.85rem; font-weight: 800; color: #64748b; }
-        .btn-mode {
-            padding: 6px 14px;
-            font-size: 0.8rem;
-            background: #e2e8f0;
-            color: #475569;
-        }
-        .btn-mode.active {
-            background: var(--primary-color);
-            color: white;
-            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
-        }
-
-        /* 문제 영역 */
-        #quiz-count { font-size: 0.85rem; color: var(--primary-color); font-weight: 700; margin-bottom: 10px; }
-        .question-area {
-            font-size: 1.2rem;
-            font-weight: 600;
-            min-height: 140px;
-            margin-bottom: 25px;
-            line-height: 1.6;
-            word-break: keep-all;
-            color: #1a202c;
-        }
-
-        /* 정답 영역 */
+        .question-area { font-size: 1.1rem; min-height: 150px; margin-bottom: 20px; line-height: 1.7; }
         .answer-area {
-            display: none;
-            background: #f1f5f9;
-            border-left: 5px solid var(--primary-color);
-            padding: 20px;
-            border-radius: 12px;
-            color: #334155;
-            margin-bottom: 25px;
-            font-size: 1rem;
-            line-height: 1.6;
+            display: none; background: #f8f9fa; border: 1px dashed #3498db; padding: 15px;
+            border-radius: 8px; color: #2c3e50; margin-bottom: 20px; font-size: 1rem; line-height: 1.6; word-break: keep-all;
         }
-
-        /* 하단 메인 네비게이션 버튼 */
-        .buttons { display: flex; gap: 12px; }
-        .btn-main { flex: 1; padding: 16px; font-size: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .btn-prev { background: #94a3b8; color: white; }
-        .btn-show { background: #334155; color: white; }
-        .btn-next { background: var(--primary-color); color: white; }
-
-        /* 반응형 모바일 최적화 */
-        @media (max-width: 480px) {
-            .quiz-card { padding: 20px; }
-            .question-area { font-size: 1.1rem; }
-            .btn-main { padding: 14px; font-size: 0.9rem; }
-        }
+        .buttons { display: flex; gap: 10px; }
+        .btn-main { flex: 1; padding: 15px; font-size: 1rem; }
+        .btn-prev { background: #95a5a6; color: white; }
+        .btn-show { background: #34495e; color: white; }
+        .btn-next { background: #3498db; color: white; }
+        .btn-mode { flex: none; padding: 5px 10px; font-size: 0.75rem; background: #ecf0f1; color: #7f8c8d; border: 1px solid #bdc3c7; }
+        .btn-mode.active { background: #2ecc71; color: white; border-color: #27ae60; }
+        button:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
 
 <div class="quiz-card">
     <div class="control-panel">
-        <div class="input-group search-box">
-            <input type="text" id="searchInput" placeholder="키워드 검색 (예: 원자, 콘덴서)" onkeyup="if(window.event.keyCode==13){searchQuiz()}">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="내용 검색..." onkeyup="if(window.event.keyCode==13){searchQuiz()}">
             <button class="btn-action" onclick="searchQuiz()">검색</button>
         </div>
-        <div class="input-group go-to-box">
-            <input type="number" id="pageInput" placeholder="문제번호" onkeyup="if(window.event.keyCode==13){goToQuiz()}">
+        <div class="go-to-box">
+            <input type="number" id="pageInput" placeholder="번호" onkeyup="if(window.event.keyCode==13){goToQuiz()}">
             <button class="btn-action btn-go" onclick="goToQuiz()">이동</button>
+            <span style="font-size: 0.8rem; color: #888; align-self: center;">번 문제로 이동</span>
         </div>
     </div>
 
     <div class="mode-switch">
-        <span class="mode-label">학습 환경 설정</span>
+        <span class="mode-label">모드:</span>
         <button id="modeBtn" class="btn-mode" onclick="toggleMode()">랜덤 모드</button>
     </div>
 
-    <div id="quiz-count"></div>
-    <div class="question-area" id="questionBox">데이터를 불러오는 중입니다...</div>
+    <div id="quiz-count" style="font-size: 0.8rem; color: #888; margin-bottom: 5px;"></div>
+    <div class="question-area" id="questionBox">문제를 불러오는 중입니다...</div>
 
     <div class="answer-area" id="answerBox">
-        <div style="margin-bottom: 8px; font-weight: 800; color: var(--primary-color);">[ 학습 해설 ]</div>
-        <span id="answerText"></span>
+        <strong>정답:</strong> <span id="answerText"></span>
     </div>
 
     <div class="buttons">
@@ -187,7 +81,7 @@
     let currentHistoryIndex = -1;
     let isRandomMode = true;
     let sequentialIndex = 0;
-    let currentAnswer = "";
+    let currentAnswer = ""; // 현재 문제의 정답 데이터를 보관할 변수
 
     function goToQuiz() {
         const input = document.getElementById('pageInput');
@@ -291,13 +185,13 @@
     function displayQuiz(index) {
         const selected = quizData[index];
         const question = selected[0];
-        currentAnswer = selected[1] || "";
+        currentAnswer = selected[1] || ""; // 정답 데이터를 변수에 저장
 
         document.getElementById('questionBox').innerHTML = question;
-        document.getElementById('answerBox').style.display = 'none';
+        document.getElementById('answerBox').style.display = 'none'; // 새 문제 시 정답창 숨김
 
         const modeText = isRandomMode ? "랜덤" : "순차";
-        document.getElementById('quiz-count').innerText = `[${modeText}] ${index + 1} / ${quizData.length}`;
+        document.getElementById('quiz-count').innerText = `[${modeText}] 전체 ${quizData.length}문항 중 ${index + 1}번 확인 중`;
         window.scrollTo(0, 0);
     }
 
@@ -307,10 +201,13 @@
         prevBtn.style.display = canGoBack ? 'block' : 'none';
     }
 
+    // 정답 확인 버튼 로직 수정
     function showAnswer() {
         if (currentAnswer.endsWith(".html")) {
+            // 파일 경로인 경우 새 창(탭)으로 열기
             window.open(currentAnswer, '_blank');
         } else {
+            // 일반 텍스트인 경우 카드 내에서 토글
             const answerBox = document.getElementById('answerBox');
             const answerText = document.getElementById('answerText');
             answerText.innerHTML = currentAnswer;
